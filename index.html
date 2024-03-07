@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello-World-SPA</title>
+    <style>
+        body {
+            margin-left: auto;
+            margin-right: auto;
+            width: 50%;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hello World</h1>
+    
+    <div id="app">{{ message }}</div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script>
+        const { createApp, ref } = Vue
+      
+        createApp({
+          setup() {
+            const message = ref('Hello vue!')
+
+            fetch('http://localhost:3000/message')
+                .then(response => response.json())
+                .then(data => {
+                    message.value = data.message
+                })
+                .catch(error => console.error(error))
+                
+            return {
+              message
+            }
+          }
+        }).mount('#app')
+      </script>
+</body>
+</html>
