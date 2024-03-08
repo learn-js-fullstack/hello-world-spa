@@ -16,7 +16,22 @@
 <body>
     <h1>Hello World</h1>
     
-    <div id="app">{{ message }}</div>
+    <div id="app">
+      {{ message }}
+      <hr/>
+      <p style="color: red;">{{error}}</p>
+      <input type="text" v-model="message_input" />
+      <button @click="captureMessageInput">Send</button>
+      <p style="font-size: 15px; color: gray;">{{message_acknowledged}}</p>
+      
+      <div v-if="all_messages.length > 0">
+        <hr/>
+        <p>All Messages</p>
+        <ul>
+          <li v-for="am in all_messages">{{am.message}}</li>
+        </ul>
+      </div>
+    </div>
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script>
@@ -25,16 +40,49 @@
         createApp({
           setup() {
             const message = ref('Hello vue!')
+            const message_input = ref('')
+            const error = ref(null)
+            const message_acknowledged = ref('')
+            const all_messages = ref([])
 
             fetch('http://localhost:3000/message')
                 .then(response => response.json())
                 .then(data => {
                     message.value = data.message
                 })
-                .catch(error => console.error(error))
-                
+                .catch(e => error.value = e.message)
+            
+            
+            const captureMessageInput = () => {
+              fetch('http://localhost:3000/message', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({message : message_input.value})
+              })
+              .then(response => response.json())
+              .then(data => {
+                message_input.value = ''
+                message_acknowledged.value = data.message
+                fetchAllMessages()
+              })
+              .catch(e => error.value = e.message)
+            }
+
+            const fetchAllMessages = () => {
+              fetch('http://localhost:3000/message/all')
+                .then(response => response.json())
+                .then(data => {
+                  all_messages.value = data
+                })
+                .catch(e => error.value = e.message)
+            }
+            
+            fetchAllMessages()
+
             return {
-              message
+              message, message_input, captureMessageInput, error,message_acknowledged, all_messages
             }
           }
         }).mount('#app')
