@@ -28,9 +28,15 @@
         <hr/>
         <p>All Messages</p>
         <ul>
-          <li v-for="am in all_messages">{{am.message}}</li>
+          <li v-for="(am,index) in all_messages">
+            {{am.message}}
+            <input v-if="isEditable(index)" type="text" v-model="am.message" />
+            <button @click="deleteMessage(am.message)">x</button>
+            <button @click="edit(index)">Edit</button>
+          </li>
         </ul>
       </div>
+      <p v-else>No message found. Please add some message</p>
     </div>
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -78,11 +84,31 @@
                 })
                 .catch(e => error.value = e.message)
             }
+            const deleteMessage = (message) => {
+              fetch(`http://localhost:3000/message/${message}`, {
+                method: 'DELETE'
+              })
+              .then(response => response.json())
+              .then(data => {
+                fetchAllMessages()
+              })
+              .catch(e => error.value = e.message)
+            }
             
+            const edit = (index) => {
+             console.log(index)
+            }
+
+            const isEditable = (index) => {
+              console.log(index)
+              return false;
+            }
+
             fetchAllMessages()
 
             return {
-              message, message_input, captureMessageInput, error,message_acknowledged, all_messages
+              message, message_input, captureMessageInput, error,message_acknowledged, 
+              all_messages,deleteMessage,edit,isEditable
             }
           }
         }).mount('#app')
